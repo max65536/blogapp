@@ -1,0 +1,19 @@
+///DSP
+1-6:Wayne Wolf: Computers as Components –Principles of
+Embedded Computing Design, Morgan Kaufmann Publishers, 2001,
+ISBN 1-55860-541-X
+BN9460
+7-10:Wayne Wolf: Modern VLSI Design –System-on-Chip Design,
+3rd Edition, Prentice Hall, 2002,
+ISBN 0-13-061970-1
+BN9461+3
+///KI
+Neural Networks and Learning Machines
+ISBN 9-78-013129376-2
+ST 301 0005+3
+//MMI
+Multimedia Content Analysis
+ZN 6050 0002
+//RMI
+Advanced man machine interaction : fundamentals and implementation
+DI5339
