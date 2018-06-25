@@ -1,0 +1,93 @@
+{% extends '__base__.html' %}
+
+{% block title %}注册{% endblock %}
+
+{% block beforehead %}
+
+<script>
+    function validateEmail(email){
+        var re = /^[a-z0-9\.\-\_]+\@[a-z0-9\-\_]+(\.[a-z0-9\-\_]+){1,4}$/;
+        return re.test(email.toLowerCase());
+    }
+    //$(function() {....}) 是 jQuery 中的经典用法，等同于 $(document).ready(function() {....})，即在页面加载完成后才执行某个函数，如果函数中要操作 DOM，在页面加载完成后再执行会更安全，所以在使用 jQuery 时这样的写法很常见。
+    $(function(){
+        var vm=new Vue({
+            el:'#vm',
+            data:{
+                name:'',
+                email:'',
+                password1:'',
+                password2:''
+            },
+            methods:{
+                submit:function(event){
+                    event.preventDefault();
+                    var $form=$('#vm');
+                    if (!this.name.trim()){
+                        return $form.showFormError('Please input your name.')
+                    }
+                    if (!validateEmail(this.email.trim().toLowerCase())){
+                        return $form.showFormError('Please input the right Email address.');
+                    }
+                    if (this.password1.length<6){
+                        return $form.showFormError('password at least 6 characters.')
+                    }
+                    if (this.password1!==this.password2){
+                        return $form.showFormError('two passwords don\'t match')
+                    }
+                    var email=this.email.trim().toLowerCase();
+                    // alert('Hello ' + this.email + '!')
+                    $form.postJSON('/api/users',{
+                        name: this.name.trim(),
+                        email:email,
+                        passwd:sha1(email+':'+this.password1).toString()
+                    },function (err,r){
+                        if (err){
+                            return $form.showFormError(err);
+                        }
+                        return location.assign('/api/users')
+                    })
+                }
+            }
+        })
+        $('#vm').show();
+    });
+</script>
+
+{% endblock %}
+
+{% block content %}
+    <div class="uk-width-2-3">
+        <h1>欢迎注册！</h1>
+        <form id="vm" v-on:click="submit" class="uk-form uk-form-stacked">
+            <div class="uk-alert uk-alert-danger uk-hidden"></div>
+            <div class="uk-form-row">
+                <label class="uk-form-label">name:</label>
+                <div class="uk-form-controls">
+                    <input type="text" v-model="name" maxlength="50" placeholder="name" class="uk-width-1-1">
+                </div>
+            </div>
+            <div class="uk-form-row">
+                <label class="uk-form-label">Email:</label>
+                <div class="uk-form-controls">
+                    <input type="text" v-model="email" maxlength="50" placeholder="yourname@example.com" class="uk-width-1-1">
+                </div>
+            </div>
+            <div class="uk-form-row">
+                <label class="uk-form-label">password:</label>
+                <div class="uk-form-controls">
+                    <input type="password" v-model="password1" maxlength="50" placeholder="password" class="uk-width-1-1">
+                </div>
+            </div>
+            <div class="uk-form-row">
+                <label class="uk-form-label">repeat password:</label>
+                <div class="uk=uk-form-controls">
+                    <input type="password" v-model="password2" maxlength="50" placeholder="repeat password" class="uk-width-1-1">
+                </div>
+            </div>
+            <div class="uk-form-row">
+                <button type="submit" class="uk-button-primary"><i class="uk-icon-user"></i>提交</button>
+            </div>
+        </form>
+    </div>
+{% endblock %}
