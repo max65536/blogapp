@@ -27,15 +27,21 @@ async def destroy_pool():
         __pool.close()
         await __pool.wait_closed()
 
-async def execute(sql,args):
+async def execute(sql,args,autocommit=True):
     log(sql)
     with(await __pool)as conn:
+        if not autocommit:
+            await conn.begin()
         try:
             cur= await conn.cursor()
             await cur.execute(sql.replace('?','%s'),args)
             affected=cur.rowcount
             await cur.close()
+            if not autocommit:
+                await conn.commit()
         except BaseException as e:
+            if not autocommit:
+                await conn.rollback()
             raise
         return affected
 
@@ -207,8 +213,6 @@ class Model(dict, metaclass=ModelMetaclass):
         if len(rs)==0:
             return None
         return cls(**rs[0])
-    async def save(self):
-        args=list(map(self.get))
 
     @classmethod
     async def findAll(cls, where=None, args=None,**kw):
@@ -247,10 +251,44 @@ class Model(dict, metaclass=ModelMetaclass):
         #         values.append(v)
         #     # print('%s where %s'%(cls.__select__,'and'.join(args),values))
         # return rs
+    @classmethod
+    async def findNumber(cls,selectField,where=None,args=None):
+        'find number by select and where'
+        #反单引号在SQL语句中表示库、表、字段等名称
+        #selectField='count(1)'或者'count(*)'、'count(id)'
+        #_num_给查询结果命名
+        sql=['select %s _num_ from `%s`'%(selectField,cls.__table__)]
+        # sql=: ['select count(id) _num_ from `blogs`']
+        if where:
+            sql.append('where')
+            sql.append(where)
+        rs=await select(' '.join(sql),args,1)
+        if len(rs)==0:
+            return None
+        print(rs)
+        return rs[0]['_num_']
+
+    async def remove(self):
+        args=[self.getValue(self.__primary_key__)]
+        rs=await execute(self.__delete__,args)
+        if rs!=1:
+            logging.warn('failed to remove by primary key: affected rows: %s' % rs)
+
+    async def update(self):
+        args=list(map(self.getValue,self.__fields__))
+        #'update `%s` set %s where `%s`=?' % (tableName, ', '.join(map(lambda f: '`%s`=?' % (mappings.get(f).name or f), fields)), primaryKey)
+
+        #update `blogs` set `content`=?, `user_id`=?, `created_at`=?, `user_image`=?, `name`=?, `summary`=?, `user_name`=? where `id`=?
+        args.append(self.getValueOrDefault(self.__primary_key__))
+        print('save"%s'%args)
+        rows=await execute(self.__update__,args)
+        if rows!=1:
+            print(self.__insert__)
+            logging.warning('failed to insert record: affected rows:%s'%rows)
 
     async def save(self):
         args=list(map(self.getValueOrDefault,self.__fields__))
-        print('save"%s'%args)
+        # print('save"%s'%args)
         args.append(self.getValueOrDefault(self.__primary_key__))
         rows=await(execute(self.__insert__,args))
         if rows!=1:

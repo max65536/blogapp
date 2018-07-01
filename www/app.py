@@ -43,7 +43,7 @@ async def foo_factory(app,handler):
 async def logger_factory(app,handler):
     #其实就是装饰器
     async def logger(request):
-        #这里request参数是怎么传进去的?
+        #这里request参数是怎么传进去的?----修饰器
         # 记录日志:
         logging.info('Request: %s %s'%(request.method,request.path))
         # 继续处理请求:
@@ -52,13 +52,22 @@ async def logger_factory(app,handler):
 
 async def data_factory(app,handler):
     async def parse_data(request):
+        logging.info('data_factory!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+        logging.info('request.method:%s'%request.method)
         if request.method=='POST':
+            logging.info('request.content_type: %s'% request.content_type)
             if request.content_type.startswith('application/json'):
                 request.__data__=await request.json()
                 logging.info('request json:%s '% str(request.__data__))
-            elif request.content_type.startswith('application/x-www-form-unlencoded'):
+            elif request.content_type.startswith('application/x-www-form-urlencoded'):
                 request.__data__=await request.post()
                 logging.info('request form: %s '% str(request.__data__))
+            elif request.content_type.startswith('image'):
+                request.__data__=await request.post()
+                logging.info('request image: %s '% str(request.__data__))
+            elif request.content_type.startswith('multipart/form-data'):
+                request.__data__=await request.post()
+                logging.info('request multipart: %s '% str(request.__data__))
         return (await handler(request))
     return parse_data
 '''
@@ -100,7 +109,7 @@ async def response_factory(app,handler):
             if isinstance(t,int) and t>=100 and t<600:
                 return web,Response(t,str(m))
         #default:
-        resp=web.Response(body=str(r)).encode('utf-8')
+        resp=web.Response(body=str(r).encode('utf-8'))
         resp.content_type='text/plain;charset=utf-8'
         return resp
     return response
@@ -162,7 +171,7 @@ async def init(loop):
     # srv=await loop.create_server(app.make_handler(),'127.0.0.1',9000)
     # logging.info('server started at http://127.0.0.1:9000...')
     await orm.create_pool(loop=loop,host='localhost',port=3306,user='root',password='root',db='awesome')
-    app=web.Application(loop=loop,middlewares=[logger_factory,response_factory,auth_factory])#...
+    app=web.Application(loop=loop,middlewares=[logger_factory,auth_factory,data_factory,response_factory])#...
 
     # init_jinja2(app, filters=dict(datetime=datetime_filter))
     # add_routes(app, 'handlers')
@@ -172,6 +181,7 @@ async def init(loop):
     init_jinja2(app,filters=dict(datetime=datetime_filter))
     # add_route(app,index)
     add_routes(app,'handlers')
+    add_routes(app,'handlers_blog')
     add_static(app)
     # app.router.add_route('GET','/',index)
     srv = await loop.create_server(app.make_handler(),'127.0.0.1',9001)

@@ -1,13 +1,83 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8" />
-    <title>Test users - Awesome Python Webapp</title>
-</head>
-<body>
-    <h1>All users</h1>
-    {% for u in users %}
-    <p>{{ u.name }} / {{ u.email }}</p>
-    {% endfor %}
-</body>
-</html>
+{% extends '__base__.html' %}
+
+{% block title %}编辑日志{% endblock %}
+
+{% block beforehead %}
+<link rel="stylesheet" href="/static/css/components/upload.css">
+<script src="/static/js/components/upload.js"></script>
+<script>
+$(function(){
+
+        var progressbar = $("#progressbar"),
+            bar         = progressbar.find('.uk-progress-bar'),
+            settings    = {
+
+            action: '/api/upload/image', // 上传路径 url
+
+            allow : '*.(jpg|jpeg|gif|png)', // 只允许上传图片
+
+            single : true,
+
+            type: 'json',
+
+            loadstart: function() {
+                bar.css("width", "0%").text("0%");
+                progressbar.removeClass("uk-hidden");
+            },
+
+            progress: function(percent) {
+                percent = Math.ceil(percent);
+                bar.css("width", percent+"%").text(percent+"%");
+            },
+
+            allcomplete: function(response) {
+
+                bar.css("width", "100%").text("100%");
+
+                setTimeout(function(){
+                    progressbar.addClass("uk-hidden");
+                }, 250);
+
+                alert("Upload Completed")
+            }
+        };
+
+        var select = UIkit.uploadSelect($("#upload-select"), settings),
+            drop   = UIkit.uploadDrop($("#upload-drop"), settings);
+    });
+</script>
+
+{% endblock %}
+
+{% block content %}
+<div class="uk-width-1-1 uk-margin-bottom">
+    <div class="uk-panel uk-panel-box">
+        <ul class="uk-breadcrumb">
+            <li><a href="/manage/comments">评论</a></li>
+            <li><a href="/manage/blogs">日志</a></li>
+            <li><a href="/manage/users">用户</a></li>
+        </ul>
+    </div>
+</div>
+
+
+    <div id="upload-drop" class="uk-placeholder uk-text-center">
+        <i class="uk-icon-cloud-upload uk-icon-medium uk-text-muted uk-margin-small-right"></i>
+        将文件拖拽至此 或 <input id="upload-select" type="file"></a>.
+    </div>
+
+    <div id="progressbar" class="uk-progress uk-hidden">
+        <div class="uk-progress-bar" style="width: 0%;">...</div>
+    </div>
+
+<!--
+<div id="upload-drop" >
+    <i class="uk-icon-cloud-upload uk-icon-medium "></i> 将文件拖拽至此或者
+    <input id="upload-select" name="upload-select" type="file">
+    <input type="text" id="file_path" name="file_path"  value="" hidden/>
+
+</div>
+<div id="progressbar" class="uk-progress uk-hidden">
+    <div class="uk-progress-bar" style="width: 0%;">0%</div>
+</div> -->
+{% endblock %}

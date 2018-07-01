@@ -1,0 +1,33 @@
+{% extends '__base__.html' %}
+
+{% block title %}{{ blog.name }}{% endblock %}
+
+{% block beforehead %}
+<script>
+    var comment_url='/api/blogs/comments';
+
+    // $(function(){
+    //     var $form=$('#form-comment');
+    //     $form.submit(function (e){
+    //         e.preventDefault();
+    //         $form.showFormError('');
+    //         var content=
+    //     });
+    // });
+
+</script>
+{% endblock %}
+
+{% block content %}
+    <div class="uk-width-3-4">
+        <article class="uk-article">
+            <h2>{{ blog.name }}</h2>
+            <p class="uk-article-meta">发表于{{ blog.created_at|datetime }}</p>
+            <!-- 关闭HTML自动转义 -->
+            <p>{{ blog.html_content|safe }}</p>
+
+        </article>
+
+        <hr class="uk-article-divider">
+    </div>
+{% endblock %}

@@ -1,10 +1,10 @@
-import re,time,json,logging,asyncio,hashlib,base64
+import re,time,json,logging,asyncio,hashlib,base64,os
 
 from coreweb import get,post
 
 from models import User,Blog,Comment,next_id
 
-from apis import APIError,APIValueError
+from apis import APIError,APIValueError,Page
 
 from aiohttp import web
 
@@ -14,6 +14,19 @@ _RE_EMAIL = re.compile(r'^[a-z0-9\.\-\_]+\@[a-z0-9\-\_]+(\.[a-z0-9\-\_]+){1,4}$'
 _RE_SHA1 = re.compile(r'^[0-9a-f]{40}$')
 COOKIE_NAME = 'awesession'
 _COOKIE_KEY = configs.session.secret
+
+def check_admin(request):
+    return True
+
+def get_page_index(page_str):
+    p=1
+    try:
+        p=int(page_str)
+    except ValueError as e:
+        pass
+    if p<1:
+        p=1
+    return p
 
 def user2cookie(user,max_age):
     '''
@@ -50,20 +63,22 @@ async def cookie2user(cookie_str):
     except Exception as e:
         logging.exception(e)
         raise None
+#主页
+# @get('/')
+# async def index(request):
+    # summary='Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.'
+    # blogs=[
+    #     Blog(id='1', name='Test Blog', summary=summary,created_at=time.time()-120),
+    #     Blog(id='2',name='etw',summary=summary,created_at=time.time()-3600),
+    #     Blog(id='3',name='what do you wany',summary=summary,created_at=time.time()-7200)
+    # ]
+    # return {
+    #     '__template__':'blogs.html',
+    #     'blogs':blogs
+    # }
 
-@get('/')
-async def index(request):
-    summary='Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.'
-    blogs=[
-        Blog(id='1', name='Test Blog', summary=summary,created_at=time.time()-120),
-        Blog(id='2',name='etw',summary=summary,created_at=time.time()-3600),
-        Blog(id='3',name='what do you wany',summary=summary,created_at=time.time()-7200)
-    ]
-    return {
-        '__template__':'blog.html',
-        'blogs':blogs
-    }
 
+#用户系统
 @get('/register')
 async def register():
     return{
@@ -138,15 +153,36 @@ async def authenticate(*,email,passwd):
     r.body=json.dumps(user,ensure_ascii=False).encode('utf-8')#object2json
     return r
 
-@post('/api/blogs')
-async def api_create_blog(request,*,name,summary,content):
-    check_admin(request)
-    if not name or not name.strip():
-        raise APIValueError('name', 'name cannot be empty.')
-    if not summary or not summary.strip():
-        raise APIValueError('summary', 'summary cannot be empty.')
-    if not content or not content.strip():
-        raise APIValueError('content', 'content cannot be empty.')
-    blog=Blog(user_id=request.__user__.id,user_name=request.__user__.name,user_image=request.__user__.image,name=name.strip(),content=content.strip())
-    await blog.save()
-    return blog
+'''
+@post('/api/upload/image')
+async def store_pic(request):
+    # 如果是个很大的文件不要用这种方法。
+    logging.info('upload image....................................')
+    # logging.info(request.__data__)
+    file=request.__data__['files[]']
+    filename=file.filename
+    file_content=file.file
+    # new_file=open('%s/%s'%(os.path.dirname(os.path.abspath(__file__)),filename),'wb')
+
+    # os.mkdir('./blog_data/%s',id)
+    path='./blog_data/%s'%filename
+    new_file=open(path,'wb')
+    for line in file_content:
+        new_file.write(line)
+    new_file.close()
+    # file_content.save('/temp/%s'%filename)
+    # logging.info('file=:%s'%file.filename)
+    return {
+        'path':path
+        }
+'''
+
+@get('/test')
+async def test():
+    # blog=Blog(id='3',name='what do you wany',summary='summary',content='content',user_name='lz',user_image='user+image',user_id='1',created_at=time.time()-7200)
+    # await blog.save()
+    return {
+        '__template__':'test.html'
+    }
+
+

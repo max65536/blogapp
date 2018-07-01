@@ -139,8 +139,8 @@ class RequestHandler(object):
                     for k,v in parse.parse_qs(qs,True).items():
                         kw[k]=v[0]
 
-        logging.info('request.match_info')
-        logging.info(request.match_info)
+        # logging.info('request.match_info')
+        # logging.info(request.match_info)
 
         if kw is None:
             kw=dict(**request.match_info)#??
@@ -172,10 +172,13 @@ class RequestHandler(object):
             return dict(error=e.error, data=e.data, message=e.message)
 
 def add_static(app):
-    path=os.path.join(os.path.dirname(os.path.abspath(__file__)),'static')
+    path1=os.path.join(os.path.dirname(os.path.abspath(__file__)),'static')
+    path2=os.path.join(os.path.dirname(os.path.abspath(__file__)),'blog_data')
     #用了aiohttp库的add_static()
-    app.router.add_static('/static/',path)
-    logging.info('add static %s => %s'%('/static/',path))
+    app.router.add_static('/static/',path1)
+    app.router.add_static('/image/',path2)
+    logging.info('add static %s => %s'%('/static/',path1))
+    logging.info('add image %s => %s'%('/image/',path2))
 
 def add_route(app,fn):
     '''
