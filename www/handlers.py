@@ -1,3 +1,5 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 import re,time,json,logging,asyncio,hashlib,base64,os
 
 from coreweb import get,post
@@ -91,6 +93,13 @@ async def login():
         '__template__':'login.html'
     }
 
+@get('logout')
+async def logout():
+    referer=request.headers.get('Referer')
+    r.web.HTTPFound(referer or '/')#Redirect
+    r.set_cookie(COOKIE_NAME,'-deleted-',max_age=0,httponly=True)
+    logging.info('user logged out.')
+    return r
 
 @get('/api/users')
 async def api_get_users():

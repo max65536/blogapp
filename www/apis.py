@@ -1,3 +1,5 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 import json,logging, inspect, functools
 
 class APIError(Exception):

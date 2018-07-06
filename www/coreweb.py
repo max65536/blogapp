@@ -1,4 +1,5 @@
-
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 import asyncio,os,inspect,logging,functools
 
 from apis import APIError
@@ -173,8 +174,9 @@ class RequestHandler(object):
 
 def add_static(app):
     path1=os.path.join(os.path.dirname(os.path.abspath(__file__)),'static')
-    path2=os.path.join(os.path.dirname(os.path.abspath(__file__)),'blog_data')
+    # path2=os.path.join(os.path.dirname(os.path.abspath(__file__)),'blog_data')
     #用了aiohttp库的add_static()
+    path2='../blog_data'
     app.router.add_static('/static/',path1)
     app.router.add_static('/image/',path2)
     logging.info('add static %s => %s'%('/static/',path1))

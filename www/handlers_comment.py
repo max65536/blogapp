@@ -1,3 +1,5 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 import re,time,json,logging,asyncio,hashlib,base64
 
 from coreweb import get,post

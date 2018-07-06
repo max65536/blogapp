@@ -3,17 +3,26 @@
 {% block title %}{{ blog.name }}{% endblock %}
 
 {% block beforehead %}
+<link rel="stylesheet" href="/static/css/codestyles/default_no_a.css" />
 <script>
-    var comment_url='/api/blogs/comments';
-
-    // $(function(){
-    //     var $form=$('#form-comment');
-    //     $form.submit(function (e){
-    //         e.preventDefault();
-    //         $form.showFormError('');
-    //         var content=
-    //     });
-    // });
+var comment_url = '/api/blogs/{{ blog.id }}/comments';
+$(function () {
+    var $form = $('#form-comment');
+    $form.submit(function (e) {
+        e.preventDefault();
+        $form.showFormError('');
+        var content = $form.find('textarea').val().trim();
+        if (content==='') {
+            return $form.showFormError('请输入评论内容！');
+        }
+        $form.postJSON(comment_url, { content: content }, function (err, result) {
+            if (err) {
+                return $form.showFormError(err);
+            }
+            location.reload();
+        });
+    });
+});
 
 </script>
 {% endblock %}
@@ -27,7 +36,51 @@
             <p>{{ blog.html_content|safe }}</p>
 
         </article>
+        <hr class="uk-article-divider">
+        <h3>发表评论</h3>
+
+        <article class="uk-comment">
+            <header class="uk-comment-header">
+                <img class="uk-comment-avatar uk-border-circle" width="50" height="50" src="/image/user/icons8-fox.png">
+                <h4 class="uk-comment-title">这下面输入名字</h4>
+                <input name="name" type="text" placeholder="叫什么好呢" class="uk-comment-title">
+            </header>
+            <div class="uk-comment-body">
+                <form id="form-comment" class="uk-form">
+                    <div class="uk-alert uk-alert-danger uk-hidden"></div>
+                    <div class="uk-form-row">
+                        <textarea rows="6" placeholder="说点什么吧" style="width:100%;resize:none;"></textarea>
+                    </div>
+                    <div class="uk-form-row">
+                        <button type="submit" class="uk-button uk-button-primary"><i class="uk-icon-comment"></i> 发表评论</button>
+                    </div>
+                </form>
+            </div>
+        </article>
+        <h3>最新评论</h3>
+
+        <ul class="uk-comment-list">
+            {% for comment in comments %}
+            <li>
+                <article class="uk-comment">
+                    <header class="uk-comment-header">
+                        <img class="uk-comment-avatar uk-border-circle" width="50" height="50" src="{{ comment.user_image }}">
+                        <h4 class="uk-comment-title">{{ comment.user_name }} {% if comment.user_id==blog.user_id %}(作者){% endif %}</h4>
+                        <p class="uk-comment-meta">{{ comment.created_at|datetime }}</p>
+                    </header>
+                    <div class="uk-comment-body">
+                        {{ comment.html_content|safe }}
+                    </div>
+                </article>
+            </li>
+            {% else %}
+            <p>还没有人评论...</p>
+            {% endfor %}
+        </ul>
+
 
         <hr class="uk-article-divider">
+
+
     </div>
 {% endblock %}

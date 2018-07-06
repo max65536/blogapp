@@ -1,3 +1,5 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 import re,time,json,logging,asyncio,hashlib,base64,os,shutil
 
 import markdown,markdown2
@@ -78,7 +80,7 @@ async def manage_blogs_edit(*,id):
 #blog浏览
 @get('/blogs')
 async def get_blogs():
-    blogs= await Blog.findAll()
+    blogs= await Blog.findAll(orderBy='created_at desc')
     # return dict(blogs=blogs)
     return {
         '__template__':'blogs.html',
@@ -88,7 +90,11 @@ async def get_blogs():
 @get('/blog/{id}')
 async def get_blog_details(id):
     blog=await Blog.find(id)
-    blog.html_content=markdown.markdown(blog.content,extensions=['markdown.extensions.codehilite','markdown.extensions.extra'])
+    blog.html_content=markdown.markdown(blog.content,extensions=[
+                                     'markdown.extensions.extra',
+                                     'markdown.extensions.codehilite',
+                                     'markdown.extensions.toc',
+                                    ])
     return {
         '__template__':'blog_details.html',
         'blog':blog
@@ -138,7 +144,7 @@ async def api_create_blog(request,*,name,summary,content,image=''):
         blog.content=content.strip()
     else:
         dirname=time2dirname(blog.created_at)
-        moveAll('./blog_data/temp','./blog_data/%s'%dirname)
+        moveAll('../blog_data/temp','../blog_data/%s'%dirname)
         blog.content=content_modified(content.strip(),dirname)
         blog.image=image
     await blog.update()
@@ -163,7 +169,7 @@ async def api_update_blog(id,request,*,name,summary,content,image=''):
         blog.content=content.strip()
     else:
         dirname=time2dirname(blog.created_at)
-        moveAll('./blog_data/temp','./blog_data/%s'%dirname)
+        moveAll('../blog_data/temp','../blog_data/%s'%dirname)
         blog.content = content_modified(content.strip(),dirname)
         blog.image=blog.image+image
 
@@ -174,7 +180,7 @@ async def api_update_blog(id,request,*,name,summary,content,image=''):
 async def api_delete_blog(request, *, id):
     check_admin(request)
     blog = await Blog.find(id)
-    shutil.rmtree('./blog_data/%s'%time2dirname(blog.created_at))
+    shutil.rmtree('../blog_data/%s'%time2dirname(blog.created_at))
     await blog.remove()
     return dict(id=id)
 
@@ -190,7 +196,7 @@ async def store_pic(request):
         return None
     filename=file.filename
     file_content=file.file
-    path='./blog_data/temp/%s'%filename
+    path='../blog_data/temp/%s'%filename
     new_file=open(path,'wb')
     for line in file_content:
         new_file.write(line)
@@ -198,3 +204,27 @@ async def store_pic(request):
     return {
         'path':path
         }
+
+@get('/api/comments')
+async def api_comments(*, page='1'):
+    page_index = get_page_index(page)
+    num = await Comment.findNumber('count(id)')
+    p = Page(num, page_index)
+    if num == 0:
+        return dict(page=p, comments=())
+    comments = await Comment.findAll(orderBy='created_at desc', limit=(p.offset, p.limit))
+    return dict(page=p, comments=comments)
+
+@post('/api/blogs/{id}/comments')
+async def api_create_comment(id, request, *, content):
+    # user = request.__user__
+    # if user is None:
+    #     raise APIPermissionError('Please signin first.')
+    if not content or not content.strip():
+        raise APIValueError('content')
+    blog = await Blog.find(id)
+    if blog is None:
+        raise APIResourceNotFoundError('Blog')
+    comment = Comment(blog_id=blog.id, user_id=user.id, user_name=user.name, user_image=user.image, content=content.strip())
+    await comment.save()
+    return comment
