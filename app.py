@@ -55,7 +55,7 @@ async def logger_factory(app,handler):
 
 async def data_factory(app,handler):
     async def parse_data(request):
-        logging.info('data_factory!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+        logging.info('data_factory')
         logging.info('request.method:%s'%request.method)
         if request.method=='POST':
             logging.info('request.content_type: %s'% request.content_type)
@@ -185,6 +185,7 @@ async def init(loop):
     # add_route(app,index)
     add_routes(app,'handlers')
     add_routes(app,'handlers_blog')
+    add_routes(app,'handlers_helo')
     add_static(app)
     # app.router.add_route('GET','/',index)
     srv = await loop.create_server(app.make_handler(),'127.0.0.1',9001)
