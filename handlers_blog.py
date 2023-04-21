@@ -110,7 +110,7 @@ async def get_blog_details(id):
                                      'markdown.extensions.extra',
                                      'markdown.extensions.codehilite',
                                      'markdown.extensions.toc',
-                                     'mdx_math'
+                                    # 'mdx_math'
                                     ])
     imagelist=os.listdir('../blog_data/user')
     image='/image/user/%s'%random.sample(imagelist,1)[0]

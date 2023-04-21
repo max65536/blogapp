@@ -1,0 +1,121 @@
+{% extends '__base__.html' %}
+
+{% block title %}{{ blog.name }}{% endblock %}
+
+{% block beforehead %}
+<link rel="stylesheet" href="/static/css/codestyles/default_no_a.css" />
+<script>
+var comment_url = '/api/blogs/{{ blog.id }}/comments';
+
+
+function initVM(image) {
+    var vm = new Vue({
+        el: '#vm',
+        data: {
+            name:'',
+            content:'',
+            image:image
+        },
+        methods: {
+            submit: function (event) {
+                event.preventDefault();
+                var $form = $('#vm').find('form');
+                // alert('submit!');
+                $form.postJSON(comment_url, this.$data, function (err, r) {
+                    if (err) {
+                        $form.showFormError(err);
+                    }
+                    else {
+                        location.reload();
+                    }
+                });
+            }
+        }
+    });
+    $('#vm').show();
+}
+
+$(function () {
+    // var $form = $('#form-comment');
+    // $form.submit(function (e) {
+    //     e.preventDefault();
+    //     $form.showFormError('');
+    //     var content = $form.find('textarea').val().trim();
+    //     var name= document.getElementsByName('name');
+    //     if (content==='') {
+    //         return $form.showFormError('请输入评论内容！');
+    //     }
+    //     $form.postJSON(comment_url, { content: content,name:name }, function (err, result) {
+    //         if (err) {
+    //             return $form.showFormError(err);
+    //         }
+    //         location.reload();
+    //     });
+    // });
+    var image='{{ image }}';
+    initVM(image);
+});
+
+</script>
+{% endblock %}
+
+{% block content %}
+    <div class="uk-width-3-4">
+        <article class="uk-article">
+            <h2>{{ blog.name }}</h2>
+            <p class="uk-article-meta">发表于{{ blog.created_at|datetime }}</p>
+            <!-- 关闭HTML自动转义 -->
+            <p>{{ blog.html_content|safe }}</p>
+
+        </article>
+        <hr class="uk-article-divider">
+        <h3>发表评论</h3>
+
+        <div id="vm" >
+            <article class="uk-comment">
+                <header class="uk-comment-header">
+                    <img class="uk-comment-avatar uk-border-circle" width="50" height="50" src="{{ image }}">
+                    <h4 class="uk-comment-title">这里输入名字</h4>
+                    <input v-model="name" name="name" type="text" placeholder="叫什么好呢" class="uk-comment-title">
+                </header>
+                <div class="uk-comment-body">
+                    <form id="form" v-on:submit="submit" class="uk-form">
+                        <div class="uk-alert uk-alert-danger uk-hidden"></div>
+                        <div class="uk-form-row">
+                            <textarea v-model="content" rows="6" placeholder="说点什么吧" style="width:100%;resize:none;"></textarea>
+                            <!-- <p>{{ image }}</p> -->
+                        </div>
+                        <div class="uk-form-row">
+                            <button type="submit" class="uk-button uk-button-primary"><i class="uk-icon-comment"></i> 发表评论</button>
+                        </div>
+                    </form>
+                </div>
+            </article>
+        </div>
+        <h3>最新评论</h3>
+
+        <ul class="uk-comment-list">
+            {% for comment in comments %}
+            <li>
+                <article class="uk-comment">
+                    <header class="uk-comment-header">
+                        <img class="uk-comment-avatar uk-border-circle" width="50" height="50" src="{{ comment.user_image }}">
+                        <h4 class="uk-comment-title">{{ comment.user_name }} {% if comment.user_id==blog.user_id %}(作者){% endif %}</h4>
+                        <p class="uk-comment-meta">{{ comment.created_at|datetime }}</p>
+                    </header>
+                    <div class="uk-comment-body">
+                        {{ comment.content|safe }}
+                    </div>
+                </article>
+            </li>
+            {% else %}
+            <p>还没有人评论...</p>
+            {% endfor %}
+        </ul>
+
+
+        <hr class="uk-article-divider">
+
+
+    </div>
+{% endblock %}
