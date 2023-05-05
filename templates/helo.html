@@ -32,7 +32,7 @@
     <table id="xiantian">
       <thead>
         <tr>
-          <th>先天卦</th>
+         
         </tr>
       </thead>
       <tbody>
@@ -45,7 +45,7 @@
     <table id="houtian">
       <thead>
         <tr>
-          <th>后天卦</th>
+          
         </tr>
       </thead>
       <tbody>
@@ -76,9 +76,13 @@
 
  <script type="text/javascript">
 
-  function gen_table(table, bin, age_list, yuantang, name){
+  function gen_table(table, bin, age_list, yuantang, name, xianhou){
     var thead = table.querySelector("thead");
     var headrow = thead.querySelector("tr");
+    headrow.innerHTML="";
+
+    var xianhouCell= headrow.insertCell();
+    if (xianhou=="xian") xianhouCell.textContent = "先天卦"; else xianhouCell.textContent = "后天卦";
     var headCell= headrow.insertCell();
     headCell.textContent = name;
 
@@ -166,9 +170,9 @@
     }
 
     var table_xiantian = document.getElementById("xiantian");
-    gen_table(table_xiantian, response['bin_xian'], response['age_xian'], response['先天元堂'], response['先天卦'])
+    gen_table(table_xiantian, response['bin_xian'], response['age_xian'], response['先天元堂'], response['先天卦'], xianhou="xian");
     var table_houtian = document.getElementById("houtian");
-    gen_table(table_houtian, response['bin_hou'], response['age_hou'], response['后天元堂'], response['后天卦'])
+    gen_table(table_houtian, response['bin_hou'], response['age_hou'], response['后天元堂'], response['后天卦'], xianhou="hou");
 
     },
     error: function() {
