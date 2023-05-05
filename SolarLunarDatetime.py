@@ -1,10 +1,9 @@
 import sxtwl # 阴历日期转换库
 from consts import GAN, ZHI, YUEJIANG, JIEQI, mapping_JIEQI_to_YUEJIANG 
-
-
 import datetime
 
 from pytz import timezone
+from IPython import embed
 
 def datetime_as_timezone(date_time, time_zone):
     tz = timezone(time_zone)
@@ -16,9 +15,11 @@ def convert(time=None, time_zone='Asia/Shanghai'):
         date_time = datetime.datetime.now()
     else:
         date_time = time        
-    local_date_time = datetime_as_timezone(date_time=date_time, time_zone=time_zone)
+    # local_date_time = datetime_as_timezone(date_time=date_time, time_zone=time_zone)
+    local_date_time = date_time
     solartime = SolarLunarDatetime.init_from_solar(local_date_time.year, local_date_time.month, local_date_time.day, local_date_time.hour)
-    return solartime.GanZhi
+    # embed()
+    return solartime.GanZhi, solartime.JieQi
 
 
 class SolarLunarDatetime(object):
@@ -142,3 +143,5 @@ class SolarLunarDatetime(object):
 '''
 #JieQi = ["冬至", "小寒", "大寒", "立春", "雨水", "惊蛰", "春分", "清明", "谷雨", "立夏", "小满", "芒种", "夏至", "小暑", "大暑", "立秋", "处暑","白露", "秋分", "寒露", "霜降", "立冬", "小雪", "大雪"]
 #mapping [    10,     10,     11,     11,    0  ,     0 ,     1 ,     1 ,     2 ,     2 ,     3 ,     3 ,     4 ,     4 ,     5 ,     5 ,     6 ,    6 ,     7 ,     7 ,     8 ,     8 ,     9 ,     9 ]
+if __name__=="__main__":
+    print(convert())

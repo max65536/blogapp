@@ -144,7 +144,7 @@ class RequestHandler(object):
         # logging.info(request.match_info)
 
         if kw is None:
-            kw=dict(**request.match_info)#??
+            kw=dict(**request.match_info)
         else:
             if not self._has_var_kw_arg and self._named_kw_args:
                 copy=dict()

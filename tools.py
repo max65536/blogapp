@@ -56,7 +56,7 @@ def GUA_to_num(x):
     return mapping_GUA_to_NUM[x]
 
 def luoshunum_to_GUA(x):
-    mapping_NUM_to_GUA = {6:"乾",2:"坤",7:"兑",8:"艮",9:"离",1:"坎",3:"震",4:"巽",5:"坤"}
+    mapping_NUM_to_GUA = {6:"乾",2:"坤",7:"兑",8:"艮",9:"离",1:"坎",3:"震",4:"巽",5:"中"}
     return mapping_NUM_to_GUA[x]
 
 def GUA_char_to_unicode(x):
@@ -173,9 +173,9 @@ def yinyang(x):
     yang = ["甲", "丙", "戊", "庚", "壬"] + ["子", "寅", "辰", "午", "申", "戌"]
     yin  = ["乙", "丁", "己", "辛", "癸"] + ["丑", "卯", "巳", "未", "酉", "亥"]
     if x in yang:
-        return ""
+        return "阳"
     elif x in yin:
-        return ""
+        return "阴"
     else:
         raise ValueError("value Error:" + str(x))
 
@@ -193,3 +193,36 @@ def yuejiang_name(yuejiang):
 
 def sizhu_to_string(sizhu):
     return sizhu['year'] + sizhu['month'] + sizhu['day'] + sizhu['hour']
+
+def Yuan(year):
+    base = 1864
+    res = (year - base) // 60 % 3
+    return res
+
+def jigong(gua, gender, year):
+
+    assert gua=="中"
+    yinyang = year % 2
+    yuan = Yuan(year)
+    if yuan==0:    # 上元
+        if gender=="男":
+            return "艮"
+        else: 
+            return "坤"
+                
+    elif yuan==1:  # 中元
+        if yinyang==0 and gender =="男": # 阳    
+            return "艮"
+        if yinyang==1 and gender =="男": # 阴    
+            return "坤"
+        if yinyang==0 and gender =="女": # 阳    
+            return "坤"
+        if yinyang==1 and gender =="女": # 阴    
+            return "艮"                        
+    else: # 下元
+        
+        assert yuan==2
+        if gender=="男":            
+            return "离"
+        else: 
+            return "兑"
