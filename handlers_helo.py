@@ -17,6 +17,13 @@ async def index_helo(request):
         "__template__":"helo.html"
     }
 
+@get('/testhelo')
+async def test_helo(request):
+    return {
+        "__template__":"testhelo.html"
+    }
+
+
 @post('/api/helo')
 async def api_getdate(request,*, datetimestr, gender):
     print(gender, datetimestr)
@@ -63,6 +70,7 @@ async def api_getdate(request,*, datetimestr, gender):
     result_dict={
         "时间":datetime_obj.strftime("%Y-%m-%d %H:%M:%S"),
         "性别": gender,
+        "yinyang":yinyang(year[0]),
         "干支":ganzhi,
         "数字":nums,
         "天数":num_tian,
@@ -82,7 +90,6 @@ async def api_getdate(request,*, datetimestr, gender):
         "bin_hou" : gua_houtian['bin'],
         "name_xian": gua_xiantian['name'],
         "name_hou": gua_houtian['name']
-
     }
     output_list = []
     for key, value in result_dict.items():

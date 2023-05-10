@@ -39,6 +39,9 @@ def gua_to_yao(row):
     return bin_str
 
 def gua_to_yuantang(row, hour_Z=None, gender="男", season=None):    
+    '''
+    定元堂
+    '''
     # up   = mapping_gua_xiang[up]
     # down = mapping_gua_xiang[down]
     # row = df[(df['up']==up)& (df['down']==down)].iloc[0]
@@ -77,7 +80,7 @@ def gua_to_yuantang(row, hour_Z=None, gender="男", season=None):
             order = ['子卯', '丑辰', '寅巳', '午酉', '未戌', '申亥']
         elif gender=="男" and season=="阴":
             order = ['申亥', '未戌', '午酉', '寅巳', '丑辰', '子卯']
-        elif gender=="女" and season=="阳":
+        elif gender=="男" and season=="阳":
             order = ['子卯', '丑辰', '寅巳', '午酉', '未戌', '申亥']
 
     elif yinyang==0:
@@ -114,11 +117,19 @@ def gua_to_yuantang(row, hour_Z=None, gender="男", season=None):
         if hour_Z in item:
             yao_bian = i
             break
-    assert yao_bian > 0
+    print(order, hour_Z, yao_bian, row_bin, row)
+    assert yao_bian >= 0
     # gua_bian_num = (1 << yao_bian) ^ row['yao']
     # gua_bian = df[df['yao']==gua_bian_num].iloc[0]
 
     return order, yao_bian
+
+def zhizungua(gua):
+    '''
+    至尊卦
+    '''
+    pass
+
     
 def get_age(gua, yuantang, startage=0):
     start = yuantang
@@ -136,6 +147,91 @@ def get_age(gua, yuantang, startage=0):
         if i==yuantang:
             break
     return age_list, age
+
+# def get_gua_nian(gua, yuantang, startage=0):
+#     gua_year(gua=gua, yaobian=, yinyang=)
+
+def shi_ying(gua):
+    '''
+    求世爻应爻
+
+    寻宫问世诀
+    天同二世天变五，地同四世地变初，
+    本宫六世三世异，人同游魂人变归。
+    一二三六外卦宫，四五游魂内变更，
+    归魂内卦是本宫。
+    '''
+
+    yao = gua['bin']
+    down = yao[:3]
+    up = yao[3:]
+
+    tian = up[2]==down[2]
+    ren  = up[1]==down[1]
+    di   = up[0]==down[0]        
+    if not di and not ren and     tian: # 天同
+        shi = 2 - 1
+    if     di and     ren and not tian: # 天变            
+        shi = 5 - 1    
+
+    if     di and not ren and not tian: # 地同
+        shi = 4 - 1
+    if not di and     ren and     tian: # 地变
+        shi = 1 - 1        
+
+    if     di and     ren and     tian: # 本宫
+        shi = 6 - 1
+    if not di and not ren and not tian: # 三世异
+        shi = 3 - 1                
+
+    if not di and     ren and not tian: # 人同
+        shi = 4 - 1
+    if     di and not ren and     tian: # 人变
+        shi = 3 - 1        
+
+    ying = (shi + 3) % 6
+    return shi, ying
+
+def gua_year(gua, yaobian, yinyang):
+
+    start_bin = gua['bin']
+    current_bin = start_bin
+
+    def next(x, increase):
+        return (x+increase) % 6
+    
+    def bin_change(i):     
+        nonlocal current_bin           
+        if current_bin[i]=='0':
+            new_bin = current_bin[:i] + '1' + current_bin[i+1:]
+        elif current_bin[i]=='1':
+            new_bin = current_bin[:i] + '0' + current_bin[i+1:]
+        search = df[df['bin']==new_bin].iloc[0]
+        # print(i, current_bin, new_bin, search['name'], search['gua'])   
+        current_bin = new_bin     
+        return new_bin
+
+
+
+    gua_list = []
+    if yinyang==YIN or current_bin[yaobian]=='1':
+        gua_list.append(bin_change(yaobian))
+    else:
+        gua_list.append(current_bin)
+
+    if start_bin[yaobian]=='0':
+        gua_list.append(bin_change(next(yaobian, 3)))
+        gua_list.append(bin_change(yaobian))
+        for i in range(6):
+            yaobian = (yaobian + 1) % 6
+            gua_list.append(bin_change(yaobian))
+    else:
+        for i in range(5):
+            yaobian = (yaobian + 1) % 6
+            gua_list.append(bin_change(yaobian))    
+
+    # name_list = [df[df['bin']==x].iloc[0] for x in gua_list]    
+    return gua_list
 
 if __name__=="__main__":
 # 读取表格
@@ -166,5 +262,7 @@ if __name__=="__main__":
     print("后天：", gua_houtian.iloc[0],  "元堂:", yuantang_hou)
     print(age_hou)
 
+    gua_list = gua_year(df[df['name']=='同人'].iloc[0], 2, 1)  
+    print(gua_list)
     
     # embed()
