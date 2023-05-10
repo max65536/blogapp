@@ -67,10 +67,12 @@ async def api_getdate(request,*, datetimestr, gender):
     age_xian, endage = get_age(gua_xiantian, yuantang=yuantang_xian)
     age_hou, _ = get_age(gua_houtian, yuantang=yuantang_hou, startage=endage)
 
+    year_yinyang = 0 if yinyang(year[0])=="阳" else 1
+
     result_dict={
         "时间":datetime_obj.strftime("%Y-%m-%d %H:%M:%S"),
         "性别": gender,
-        "yinyang":yinyang(year[0]),
+        "yinyang":year_yinyang,
         "干支":ganzhi,
         "数字":nums,
         "天数":num_tian,

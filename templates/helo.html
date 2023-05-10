@@ -72,6 +72,13 @@
     </table>
   </div>  
 
+  <table id="niangua">
+    <!-- 年卦 -->
+    <tr id="niangua_container">
+      
+    </tr>
+  </table>
+
   <!-- <div class="container", id="gua_nian">
     <div class="item">Item 1</div>
     <div class="item">Item 2</div>
@@ -105,12 +112,14 @@
     
   }
 
-  function gua_year(bin, yaobian, yinyang) {
-    YIN = '阴';
-    YANG= '阳';
+  function gua_year(bin, yuantang, yao, year_yinyang, startage) {
+    YIN = 1;
+    YANG= 0;
     var start_bin = bin;
-    var current_bin = start_bin;
+    var yaobian = yuantang;
+    yinyang = (year_yinyang + startage -1) % 2
 
+    var current_bin = start_bin;
     function next(x, increase) {
       return (x + increase) % 6;
     }
@@ -128,35 +137,72 @@
     }
 
     var gua_list = [];
-    if (yinyang === YIN || current_bin[yaobian] === '1') {
+    if (start_bin[yao] === '1' || yinyang === YIN) {
       gua_list.push(bin_change(yaobian));
     } else {
       gua_list.push(current_bin);
     }
 
-    if (start_bin[yaobian] === '0') {
+    if (start_bin[yao] === '0') {
       gua_list.push(bin_change(next(yaobian, 3)));
       gua_list.push(bin_change(yaobian));
       for (var i = 0; i < 6; i++) {
         yaobian = (yaobian + 1) % 6;
         gua_list.push(bin_change(yaobian));
       }
-    } else {
+    } else if (start_bin[yao] === '1') {
       for (var i = 0; i < 5; i++) {
         yaobian = (yaobian + 1) % 6;
         gua_list.push(bin_change(yaobian));
       }
     }
+    console.log("bin", start_bin, " gual_ist", gua_list, "yaobian", yaobian, "yao", yao, "yinyang", yinyang, "year_yinyang", year_yinyang, "startage", startage);
     return gua_list;
+    
   }
 
-  function display_year(bin_list){
-    for (var i = 0; i < bin_list.length; i++) {
+  function display_year(bin_list, startyear, endyear){
+
+    var container_row = document.getElementById("niangua_container");
+    container_row.innerHTML = "";
+    
+    console.log("display");
+    for (var i = startyear; i <= endyear; i++) {
+
+      var niangua_Cell= container_row.insertCell();
+      // 创建一个新的table元素
+      var table = document.createElement("table");
+      // table.id = "table3";
       
+      // 添加表头
+      var headerRow = table.insertRow();
+      var header1 = headerRow.insertCell(0);
+      header1.innerHTML = i+"岁";
+
+      console.log(bin_list[i-startyear]);
+      // 添加数据行
+      for (var j=0; j<6; j++){
+        var dataRow = table.insertRow();
+        var data1 = dataRow.insertCell(0);
+        // console.log(bin_list[i-startyear][j]);
+        if (bin_list[i-startyear][j]=="0"){
+          data1.innerText = "████████";
+        }
+        else{
+          data1.innerText = "███▏▕███";
+        }
+      }
+      // 将表格添加到容器元素中
+      niangua_Cell.appendChild(table);
     }
+
+    // var table_houtian = document.getElementById("niangua");
+    // for (var i = 0; i < bin_list.length; i++) {
+      
+    // }
   }
 
-  function gen_table(table, bin, age_list, yuantang, name, xianhou, yinyang){
+  function gen_table(table, bin, age_list, yuantang, name, xianhou, yearyinyang){
     var thead = table.querySelector("thead");
     var headrow = thead.querySelector("tr");
     headrow.innerHTML="";
@@ -199,9 +245,13 @@
 
         row.addEventListener('click', function(){
           var timecell = this.cells[0];
-          alert(timecell.innerText);
-          gua_list = gua_year(bin, yuantang, yinyang);          
-          alert(gua_list);
+          // alert(timecell.innerText);
+          var parts = timecell.innerText.split("-");
+          var startyear = parseInt(parts[0]);
+          var endyear   = parseInt(parts[1]);  
+          new_list = gua_year(bin, yuantang, i, yearyinyang, startyear);          
+          console.log(new_list);
+          display_year(new_list, startyear, endyear);
         });
         
     }
@@ -261,7 +311,7 @@
         valueCell.textContent = valueText;
         
     }
-
+    // if (response['yinyang']=="阴") {yinynag=1; }else {yinyang=0;}
     var table_xiantian = document.getElementById("xiantian");
     gen_table(table_xiantian, response['bin_xian'], response['age_xian'], response['先天元堂'], response['先天卦'], xianhou="xian", response['yinyang']);
     var table_houtian = document.getElementById("houtian");
