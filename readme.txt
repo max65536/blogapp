@@ -1,10 +1,10 @@
 created at 03.04.2018
 
-Blogapp 1.0beta 感谢大犇Liaoxuefeng的python教程，基于aiohttp，造了个轮子，搭建了简易框架。
+
 
 在这框架的基础上编写了handlers。目前尚只完成了日志管理的部分。日志支持markdown与mathjax
 
-前端的部分有些繁杂。uikit提供了样式与主题，vue.js提供了页面的逻辑框架，加上jinja2模板引擎，构成了前端的基础模块。
+前端的部分，uikit提供了样式与主题，vue.js提供了页面的逻辑框架，加上jinja2模板引擎，构成了前端的基础模块。
 
 Blogapp 1.0beta updated 2018-07-05
 
